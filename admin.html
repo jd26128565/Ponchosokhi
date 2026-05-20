@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>পঞ্চসখী - অ্যাডমিন কন্ট্রোল প্যানেল</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Hind Siliguri', 'Segoe UI', sans-serif; 
+        }
+        body { 
+            background-color: #f4f6f9; 
+            color: #333; 
+            padding-bottom: 60px;
+        }
+
+        /* === প্রফেশনাল ড্যাশবোর্ড হেডার === */
+        .admin-header { 
+            background: linear-gradient(135deg, #1e293b, #0f172a); 
+            color: #fff; 
+            padding: 18px 20px; 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .admin-header h1 { 
+            font-size: 18px; 
+            font-weight: 700; 
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .admin-header h1 i { color: #f59e0b; }
+
+        /* === মেইন কন্টেইনার এবং ন্যাভ ট্যাব === */
+        .container { 
+            max-width: 650px; 
+            margin: 20px auto; 
+            padding: 0 15px; 
+        }
+        
+        .nav-tabs { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 5px; 
+            margin-bottom: 20px; 
+            background: #e2e8f0;
+            padding: 4px;
+            border-radius: 8px;
+        }
+        .tab-btn { 
+            background: none; 
+            border: none; 
+            padding: 10px 5px; 
+            font-size: 12px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            border-radius: 6px; 
+            color: #475569;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .tab-btn.active { 
+            background: #fff; 
+            color: #0f172a; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
+        /* === কমন কার্ড স্টাইল === */
+        .panel-card { 
+            background: #fff; 
+            border-radius: 12px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            border: 1px solid #e2e8f0;
+            display: none;
+        }
+        .panel-card.active { display: block; }
+        .card-title { 
+            font-size: 16px; 
+            font-weight: 700; 
+            margin-bottom: 15px; 
+            color: #1e293b; 
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* === ফর্ম কন্ট্রোলস === */
+        .form-group { margin-bottom: 14px; }
+        .form-group label { 
+            display: block; 
+            font-size: 13px; 
+            font-weight: 600; 
+            margin-bottom: 6px; 
+            color: #475569;
+        }
+        .form-group input, .form-group select, .form-group textarea { 
+            width: 100%; 
+            padding: 11px; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 6px; 
+            outline: none; 
+            font-size: 14px; 
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: #2563eb;
+        }
+
+        /* === বাটন স্টাইলস === */
+        .btn-primary { 
+            width: 100%; 
+            padding: 12px; 
+            background: #2563eb; 
+            color: #fff; 
+            border: none; 
+            font-weight: 700; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            transition: background 0.2s;
+        }
+        .btn-primary:hover { background: #1d4ed8; }
+        
+        /* === কালার কাস্টমাইজেশন গ্রিড === */
+        .color-pickers {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .color-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8fafc;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+        .color-box input[type="color"] {
+            width: 35px;
+            height: 35px;
+            border: none;
+            cursor: pointer;
+            background: none;
+        }
+
+        /* === ডাটা লিস্ট এবং টেবিল লেআউট === */
+        .data-list-item { 
+            background: #fff; 
+            border: 1px solid #e2e8f0; 
+            padding: 15px; 
+            border-radius: 10px; 
+            margin-bottom: 12px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+        }
+        .data-info h5 { font-size: 14px; font-weight: 700; color: #1e293b; }
+        .data-info p { font-size: 12px; color: #64748b; margin-top: 2px; }
+        
+        .action-btns { display: flex; gap: 8px; align-items: center; }
+        .btn-del { background: #ef4444; color: #fff; border: none; padding: 7px 11px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .btn-status { background: #10b981; color: #fff; border: none; padding: 7px 11px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .btn-update-stock { background: #475569; color: #fff; border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
+
+        /* ইমেজ প্রিভিউ গ্রিড */
+        .img-preview-deck { display: flex; gap: 8px; margin-top: 8px; overflow-x: auto; }
+        .preview-thumb { width: 55px; height: 55px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1; }
+        
+        /* অর্ডার ব্যাজ */
+        .badge-status { padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .status-pending { background: #fef3c7; color: #d97706; }
+        .status-completed { background: #d1fae5; color: #059669; }
+
+        /* স্টক এডিটর ইনপুট */
+        .stock-edit-input {
+            width: 55px;
+            padding: 4px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-size: 12px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <script>
+        // আপনার নিখুঁত ফায়ারবেজ কনফিগারেশন সেটআপ (কোনো পরিবর্তন ছাড়া)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAn8lTZbLSdf6N2Bh3m9IE0VayJeqfaJGU",
+            authDomain: "ponchosokhi.firebaseapp.com",
+            databaseURL: "https://ponchosokhi-default-rtdb.firebaseio.com",
+            projectId: "ponchosokhi",
+            storageBucket: "ponchosokhi.firebasestorage.app",
+            messagingSenderId: "215002944861",
+            appId: "1:215002944861:web:2c5dd4204b205d3e32c4b4",
+            measurementId: "G-FZDWZE6S3Y"
+        };
+
+        // ফায়ারবেজ ইনিশিয়ালাইজেশন
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // রিয়েল-টাইম ডাটা ফায়ারবেস এবং লোকাল মেমরির মধ্যে সমন্বয় করার ফিক্সড ফাংশন
+        function initFirebaseSync() {
+            // প্রোডাক্টস ডাটা রিয়েল-টাইম সিঙ্ক
+            db.ref('ps_products').on('value', (snapshot) => {
+                const data = snapshot.val();
+                window.products = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+                localStorage.setItem('ps_products', JSON.stringify(window.products));
+                if (typeof window.renderDashboardData === 'function') window.renderDashboardData();
+            });
+
+            // অর্ডার ডাটা নিখুঁতভাবে হ্যান্ডেল করার জন্য গ্লোবাল অবজেক্ট ম্যাপ সিঙ্ক
+            db.ref('panchosokhi_orders').on('value', (snapshot) => {
+                const data = snapshot.val();
+                // ফায়ারবেজ পুশ আইডি কি (key) সহ অর্ডার অবজেক্ট তৈরি রাখা যাতে আপডেট/ডিলিট করা সহজ হয়
+                window.ordersRawData = data || {}; 
+                window.orders = data ? Object.keys(data).map(key => ({ ...data[key], _fbKey: key })) : [];
+                localStorage.setItem('panchosokhi_orders', JSON.stringify(window.orders));
+                if (typeof window.renderDashboardData === 'function') window.renderDashboardData();
+            });
+
+            // স্লাইডার ব্যানার ডাটা সিঙ্ক
+            db.ref('ps_sliders').on('value', (snapshot) => {
+                const data = snapshot.val();
+                window.sliders = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+                localStorage.setItem('ps_sliders', JSON.stringify(window.sliders));
+                if (typeof window.renderDashboardData === 'function') window.renderDashboardData();
+            });
+
+            // ক্যাটাগরি ডাটা সিঙ্ক
+            db.ref('ps_categories').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if(data) {
+                    window.categories = Array.isArray(data) ? data : Object.values(data);
+                    localStorage.setItem('ps_categories', JSON.stringify(window.categories));
+                    if (typeof window.renderDashboardData === 'function') window.renderDashboardData();
+                }
+            });
+        }
+
+        // ফায়ারবেসে ডাটা রাইট করার জন্য গ্লোবাল মেথড বাইন্ডিং
+        window.firebaseSaveProducts = function(updatedProducts) {
+            db.ref('ps_products').set(updatedProducts);
+        };
+
+        window.firebaseSaveOrders = function(updatedOrdersObj) {
+            db.ref('panchosokhi_orders').set(updatedOrdersObj);
+        };
+
+        window.firebaseSaveSliders = function(updatedSliders) {
+            db.ref('ps_sliders').set(updatedSliders);
+        };
+
+        window.firebaseSaveCategories = function(updatedCategories) {
+            db.ref('ps_categories').set(updatedCategories);
+        };
+
+        window.firebaseSaveHeadlineText = function(htmlString) {
+            db.ref('ps_headline').set(htmlString);
+        };
+
+        window.firebaseSaveThemeConfigData = function(configObj) {
+            db.ref('ps_theme_config').set(configObj);
+        };
+
+        window.addEventListener('DOMContentLoaded', initFirebaseSync);
+    </script>
+</head>
+<body>
+
+    <header class="admin-header">
+        <h1><i class="fas fa-user-shield"></i> পঞ্চসখী কন্ট্রোল প্যানেল</h1>
+        <span style="font-size: 12px; opacity: 0.8;">v4.0 Pro Live</span>
+    </header>
+
+    <div class="container">
+        <nav class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab(0)">প্রোডাক্ট</button>
+            <button class="tab-btn" onclick="switchTab(1)">অর্ডারস</button>
+            <button class="tab-btn" onclick="switchTab(2)">স্লাইডার</button>
+            <button class="tab-btn" onclick="switchTab(3)">সেটিংস</button>
+        </nav>
+
+        <div class="panel-card active" id="tab-0">
+            <h3 class="card-title"><i class="fas fa-folder-plus"></i> কাস্টম ক্যাটাগরি যোগ করুন</h3>
+            <div class="form-group" style="display: flex; gap: 8px; margin-bottom: 20px;">
+                <input type="text" id="newCategoryInput" placeholder="উদা: নতুন কালেকশন, অফার শাড়ী...">
+                <button type="button" class="btn-primary" onclick="addNewCategory()" style="width: auto; padding: 0 20px; white-space: nowrap;">ক্যাটাগরি যুক্ত করুন</button>
+            </div>
+            <div id="adminCategoryList" style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 25px; background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0;"></div>
+
+            <h3 class="card-title"><i class="fas fa-plus-circle"></i> নতুন প্রোডাক্ট যোগ করুন (Ultra HD Photo)</h3>
+            <form onsubmit="saveProduct(event)">
+                <div class="form-group">
+                    <label>প্রোডাক্টের নাম *</label>
+                    <input type="text" id="pTitle" required placeholder="উদা: প্রিমিয়াম জামদানী শাড়ী">
+                </div>
+                <div class="color-pickers">
+                    <div class="form-group">
+                        <label>বর্তমান মূল্য (৳) *</label>
+                        <input type="number" id="pPrice" required placeholder="1250">
+                    </div>
+                    <div class="form-group">
+                        <label>পুরানো মূল্য (৳)</label>
+                        <input type="number" id="pOldPrice" placeholder="1800">
+                    </div>
+                </div>
+                <div class="color-pickers">
+                    <div class="form-group">
+                        <label>স্টক সংখ্যা *</label>
+                        <input type="number" id="pStock" required placeholder="10" value="10">
+                    </div>
+                    <div class="form-group">
+                        <label>সিলেক্ট ক্যাটাগরি *</label>
+                        <select id="pCategory"></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>প্রোডাক্ট ব্যাজ (ঐচ্ছিক)</label>
+                    <input type="text" id="pBadge" placeholder="উদা: New, 10% OFF">
+                </div>
+                <div class="form-group">
+                    <label>প্রোডাক্ট ইমেজ আপলোড (হাই কোয়ালিটি HD ছবি আপলোড হবে) *</label>
+                    <input type="file" id="pImages" accept="image/*" multiple required onchange="previewImages(this)">
+                    <div class="img-preview-deck" id="pImgPreview"></div>
+                </div>
+                <button type="submit" class="btn-primary">প্রোডাক্ট সেভ করুন</button>
+            </form>
+
+            <h3 class="card-title" style="margin-top: 30px;"><i class="fas fa-boxes"></i> বর্তমান প্রোডাক্ট লিস্ট ও স্টক এডিটর</h3>
+            <div id="adminProductList"></div>
+        </div>
+
+        <div class="panel-card" id="tab-1">
+            <h3 class="card-title"><i class="fas fa-shopping-bag"></i> কাস্টমার অর্ডার লিস্ট</h3>
+            <div id="adminOrderList"></div>
+        </div>
+
+        <div class="panel-card" id="tab-2">
+            <h3 class="card-title"><i class="fas fa-images"></i> নতুন স্লাইডার ব্যানার যোগ করুন (Ultra HD)</h3>
+            <form onsubmit="saveSlider(event)">
+                <div class="form-group">
+                    <label>ব্যানার ইমেজ সিলেক্ট করুন *</label>
+                    <input type="file" id="slideImg" accept="image/*" required>
+                </div>
+                <button type="submit" class="btn-primary">স্লাইডার আপলোড করুন</button>
+            </form>
+
+            <h3 class="card-title" style="margin-top: 30px;"><i class="fas fa-film"></i> বর্তমান স্লাইডারসমূহ</h3>
+            <div id="adminSliderList" class="img-preview-deck" style="gap:15px; flex-wrap: wrap;"></div>
+        </div>
+
+        <div class="panel-card" id="tab-3">
+            <h3 class="card-title"><i class="fas fa-bullhorn"></i> লাইভ মুভিং নোটিফিকেশন বার</h3>
+            <div class="form-group">
+                <label>হেডলাইন টেক্সট</label>
+                <input type="text" id="headlineText" placeholder="🎉 NEW YEAR SPECIAL OFFER NOW LIVE! 🎉">
+            </div>
+            <button class="btn-primary" onclick="saveHeadline()" style="margin-bottom: 25px; background: #10b981;">হেডলাইন মুভিং আপডেট করুন</button>
+
+            <h3 class="card-title"><i class="fas fa-palette"></i> ডায়নামিক কালার সেটিংস (থিম)</h3>
+            <div class="color-pickers">
+                <div class="form-group">
+                    <label>মেইন থিম কালার</label>
+                    <div class="color-box"><input type="color" id="clrPrimary" value="#b9934c"><span>Primary</span></div>
+                </div>
+                <div class="form-group">
+                    <label>লাইট গ্রেডিয়েন্ট কালার</label>
+                    <div class="color-box"><input type="color" id="clrLight" value="#dfba6b"><span>Light</span></div>
+                </div>
+                <div class="form-group">
+                    <label>হেডার টেক্সট কালার</label>
+                    <div class="color-box"><input type="color" id="clrText" value="#ffffff"><span>Text</span></div>
+                </div>
+                <div class="form-group">
+                    <label>টপ বার ব্যাকগ্রাউন্ড</label>
+                    <div class="color-box"><input type="color" id="clrTopBg" value="#dfba6b"><span>Top BG</span></div>
+                </div>
+            </div>
+            <div class="form-group" style="margin-top: 10px;">
+                <label>টপ বার টেক্সট কালার</label>
+                <div class="color-box" style="width: 50%;"><input type="color" id="clrTopText" value="#222222"><span>Top Text</span></div>
+            </div>
+            <button class="btn-primary" onclick="saveThemeConfig()" style="margin-top: 15px;">থিম কনফিগারেশন সেভ করুন</button>
+        </div>
+    </div>
+
+    <script>
+        // গ্লোবাল ভেরিয়েবল ডিফাইন (উইন্ডো অবজেক্টের সাথে কানেক্টেড)
+        window.products = JSON.parse(localStorage.getItem('ps_products')) || [];
+        window.orders = JSON.parse(localStorage.getItem('panchosokhi_orders')) || [];
+        window.ordersRawData = {};
+        window.sliders = JSON.parse(localStorage.getItem('ps_sliders')) || [];
+        window.categories = JSON.parse(localStorage.getItem('ps_categories')) || ['Best Selling Product', 'Top 10 Sharee'];
+        
+        let tempCompressedImages = [];
+
+        function switchTab(idx) {
+            document.querySelectorAll('.tab-btn').forEach((btn, i) => btn.classList.toggle('active', i === idx));
+            document.querySelectorAll('.panel-card').forEach((card, i) => card.classList.toggle('active', i === idx));
+            renderDashboardData();
+        }
+
+        // আপগ্রেডেড আল্ট্রা এইচডি (Ultra HD 0.95) ইমেজ ইঞ্জিন
+        function compressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = function (event) {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = function () {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        
+                        const maxW = 1200; 
+                        const scale = Math.min(maxW / img.width, 1);
+                        canvas.width = img.width * scale;
+                        canvas.height = img.height * scale;
+                        
+                        ctx.imageSmoothingEnabled = true;
+                        ctx.imageSmoothingQuality = 'high';
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        
+                        resolve(canvas.toDataURL('image/jpeg', 0.95));
+                    }
+                }
+            });
+        }
+
+        async function previewImages(input) {
+            const previewDeck = document.getElementById('pImgPreview');
+            previewDeck.innerHTML = '';
+            tempCompressedImages = [];
+            
+            if(input.files) {
+                for(let file of input.files) {
+                    let compBase64 = await compressImage(file);
+                    tempCompressedImages.push(compBase64);
+                    previewDeck.innerHTML += `<img src="${compBase64}" class="preview-thumb">`;
+                }
+            }
+        }
+
+        function addNewCategory() {
+            const catInput = document.getElementById('newCategoryInput');
+            const catValue = catInput.value.trim();
+            if(!catValue) return alert('ক্যাটাগরির নাম লিখুন!');
+            if(window.categories.includes(catValue)) return alert('এই ক্যাটাগরি ইতিমধ্যে আছে!');
+            
+            window.categories.push(catValue);
+            localStorage.setItem('ps_categories', JSON.stringify(window.categories));
+            if(window.firebaseSaveCategories) window.firebaseSaveCategories(window.categories);
+            catInput.value = '';
+            renderDashboardData();
+            alert('নতুন ক্যাটাগরি যোগ হয়েছে!');
+        }
+
+        function deleteCategory(catName) {
+            if(confirm(`"${catName}" ক্যাটাগরি ডিলিট করতে চান?`)) {
+                window.categories = window.categories.filter(c => c !== catName);
+                localStorage.setItem('ps_categories', JSON.stringify(window.categories));
+                if(window.firebaseSaveCategories) window.firebaseSaveCategories(window.categories);
+                renderDashboardData();
+            }
+        }
+
+        function saveProduct(e) {
+            e.preventDefault();
+            if(tempCompressedImages.length === 0) return alert('অনুগ্রহ করে ছবি সিলেক্ট করুন!');
+
+            const newProduct = {
+                id: Date.now(),
+                title: document.getElementById('pTitle').value.trim(),
+                price: document.getElementById('pPrice').value,
+                oldPrice: document.getElementById('pOldPrice').value || null,
+                stock: parseInt(document.getElementById('pStock').value) || 0,
+                section: document.getElementById('pCategory').value,
+                badge: document.getElementById('pBadge').value || null,
+                img: tempCompressedImages[0],
+                images: tempCompressedImages
+            };
+
+            window.products.push(newProduct);
+            localStorage.setItem('ps_products', JSON.stringify(window.products));
+            if(window.firebaseSaveProducts) window.firebaseSaveProducts(window.products);
+            alert('প্রোডাক্ট সফলভাবে আপলোড হয়েছে!');
+            e.target.reset();
+            document.getElementById('pImgPreview').innerHTML = '';
+            tempCompressedImages = [];
+            renderDashboardData();
+        }
+
+        function updateManualStock(productId) {
+            const stockInput = document.getElementById(`stockInput-${productId}`);
+            const newStockVal = parseInt(stockInput.value);
+            
+            if(isNaN(newStockVal) || newStockVal < 0) {
+                return alert('অনুগ্রহ করে সঠিক স্টক সংখ্যা দিন!');
+            }
+
+            window.products = window.products.map(p => {
+                if(p.id === productId) {
+                    p.stock = newStockVal;
+                }
+                return p;
+            });
+
+            localStorage.setItem('ps_products', JSON.stringify(window.products));
+            if(window.firebaseSaveProducts) window.firebaseSaveProducts(window.products);
+            alert('স্টক সফলভাবে আপডেট করা হয়েছে!');
+            renderDashboardData();
+        }
+
+        function deleteProduct(id) {
+            if(confirm('আপনি কি নিশ্চিতভাবেই প্রোডাক্টটি ডিলিট করতে চান?')) {
+                window.products = window.products.filter(p => p.id !== id);
+                localStorage.setItem('ps_products', JSON.stringify(window.products));
+                if(window.firebaseSaveProducts) window.firebaseSaveProducts(window.products);
+                renderDashboardData();
+            }
+        }
+
+        // ক্যান্সেল বা ডিলিট হলে স্টক অটোমেটিক্যালি ১টি বাড়াবে এবং ডাটাবেজ সিঙ্ক করবে
+        function deleteOrder(orderId, fbKey) {
+            if(confirm('অর্ডারটি ডিলিট/ক্যান্সেল করতে চান? এটি প্রোডাক্টের স্টক সংখ্যা ১টি বাড়িয়ে দিবে।')) {
+                const orderData = window.orders.find(o => String(o.id) === String(orderId));
+                if(orderData) {
+                    window.products = window.products.map(p => {
+                        if(p.title.trim() === orderData.product.trim()) {
+                            p.stock = (parseInt(p.stock) || 0) + 1;
+                        }
+                        return p;
+                    });
+                    localStorage.setItem('ps_products', JSON.stringify(window.products));
+                    if(window.firebaseSaveProducts) window.firebaseSaveProducts(window.products);
+                }
+
+                // ফায়ারবেজের নির্দিষ্ট পুশ কি (Key) ধরে অবজেক্ট ডিলিট করা
+                if(fbKey && window.ordersRawData[fbKey]) {
+                    delete window.ordersRawData[fbKey];
+                    if(window.firebaseSaveOrders) window.firebaseSaveOrders(window.ordersRawData);
+                } else {
+                    // ব্যাকআপ লোকাল ফিল্টার
+                    window.orders = window.orders.filter(o => String(o.id) !== String(orderId));
+                    localStorage.setItem('panchosokhi_orders', JSON.stringify(window.orders));
+                }
+                renderDashboardData();
+            }
+        }
+
+        // কমপ্লিট বা ডেলিভারড হলে স্টক থেকে অটোমেটিক মাইনাস ১ করার লজিক
+        function toggleOrderStatus(orderId, fbKey) {
+            let targetOrder = window.orders.find(o => String(o.id) === String(orderId));
+            if(!targetOrder) return;
+
+            let currentStatus = targetOrder.status || 'Pending';
+            let nextStatus = (currentStatus === 'Pending') ? 'Completed' : 'Pending';
+            
+            // স্টক প্লাস/মাইনাস লজিক
+            if (nextStatus === 'Completed') {
+                window.products = window.products.map(p => {
+                    if (p.title.trim() === targetOrder.product.trim() && p.stock > 0) {
+                        p.stock = parseInt(p.stock) - 1;
+                    }
+                    return p;
+                });
+            } else {
+                window.products = window.products.map(p => {
+                    if (p.title.trim() === targetOrder.product.trim()) {
+                        p.stock = (parseInt(p.stock) || 0) + 1;
+                    }
+                    return p;
+                });
+            }
+            
+            // ফায়ারবেজের মূল অবজেক্টের স্ট্যাটাস পরিবর্তন
+            if(fbKey && window.ordersRawData[fbKey]) {
+                window.ordersRawData[fbKey].status = nextStatus;
+                if(window.firebaseSaveOrders) window.firebaseSaveOrders(window.ordersRawData);
+            }
+            
+            localStorage.setItem('ps_products', JSON.stringify(window.products));
+            if(window.firebaseSaveProducts) window.firebaseSaveProducts(window.products);
+            renderDashboardData();
+        }
+
+        async function saveSlider(e) {
+            e.preventDefault();
+            const slideFile = document.getElementById('slideImg').files[0];
+            if(!slideFile) return;
+
+            let compressedSlide = await compressImage(slideFile);
+            
+            window.sliders.push({ img: compressedSlide }); 
+            localStorage.setItem('ps_sliders', JSON.stringify(window.sliders));
+            if(window.firebaseSaveSliders) window.firebaseSaveSliders(window.sliders);
+            alert('HD ব্যানার স্লাইডার সফলভাবে যুক্ত হয়েছে!');
+            e.target.reset();
+            renderDashboardData();
+        }
+
+        function deleteSlider(idx) {
+            if(confirm('ব্যানারটি স্লাইডার থেকে সরিয়ে ফেলতে চান?')) {
+                window.sliders.splice(idx, 1);
+                localStorage.setItem('ps_sliders', JSON.stringify(window.sliders));
+                if(window.firebaseSaveSliders) window.firebaseSaveSliders(window.sliders);
+                renderDashboardData();
+            }
+        }
+
+        function saveHeadline() {
+            const hText = document.getElementById('headlineText').value.trim();
+            if(!hText) return alert('হেডлайн টেক্সট লিখুন!');
+            const movingFormat = `<marquee scrollamount="5" onmouseover="this.stop()" onmouseout="this.start()">${hText}</marquee>`;
+            localStorage.setItem('ps_headline', movingFormat);
+            if(window.firebaseSaveHeadlineText) window.firebaseSaveHeadlineText(movingFormat);
+            alert('লাইভ হেডлайн আপডেট হয়েছে!');
+        }
+
+        function saveThemeConfig() {
+            const themeConfig = {
+                primary: document.getElementById('clrPrimary').value,
+                light: document.getElementById('clrLight').value,
+                text: document.getElementById('clrText').value,
+                topBg: document.getElementById('clrTopBg').value,
+                topText: document.getElementById('clrTopText').value
+            };
+            localStorage.setItem('ps_theme_config', JSON.stringify(themeConfig));
+            if(window.firebaseSaveThemeConfigData) window.firebaseSaveThemeConfigData(themeConfig);
+            alert('থিম এবং কালার充 কনফিগারেশন সেভ হয়েছে!');
+        }
+
+        function renderDashboardData() {
+            if(window.categories) {
+                document.getElementById('pCategory').innerHTML = window.categories.map(c => `<option value="${c}">${c}</option>`).join('');
+                
+                const catListContainer = document.getElementById('adminCategoryList');
+                if(window.categories.length > 0) {
+                    catListContainer.innerHTML = window.categories.map(c => `
+                        <span style="background:#e2e8f0; color:#1e293b; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:bold; display:inline-flex; align-items:center; gap:6px;">
+                            ${c} <i class="fas fa-times-circle" style="color:#ef4444; cursor:pointer;" onclick="deleteCategory('${c}')"></i>
+                        </span>
+                    `).join('');
+                } else { catListContainer.innerHTML = '<span style="color:#aaa; font-size:12px;">কোনো কাস্টম ক্যাটাগরি নেই</span>'; }
+            }
+
+            const pListContainer = document.getElementById('adminProductList');
+            if(window.products && window.products.length > 0) {
+                pListContainer.innerHTML = window.products.map(p => `
+                    <div class="data-list-item">
+                        <div class="data-info" style="display:flex; gap:10px; align-items:center;">
+                            <img src="${p.img}" style="width:45px; height:45px; object-fit:cover; border-radius:6px;">
+                            <div>
+                                <h5>${p.title}</h5>
+                                <p>মূল্য: ৳${p.price} | ক্যাটাগরি: ${p.section}</p>
+                                <div style="display:flex; align-items:center; gap:5px; margin-top:5px;">
+                                    <span style="font-size:12px; font-weight:bold;">স্টক:</span>
+                                    <input type="number" id="stockInput-${p.id}" class="stock-edit-input" value="${p.stock}">
+                                    <button class="btn-update-stock" onclick="updateManualStock(${p.id})">আপডেট</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="action-btns">
+                            <button class="btn-del" onclick="deleteProduct(${p.id})"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+            } else { pListContainer.innerHTML = '<p style="text-align:center; color:#94a3b8; font-size:13px;">কোনো প্রোডাক্ট আপলোড করা নেই।</p>'; }
+
+            const oListContainer = document.getElementById('adminOrderList');
+            if(window.orders && window.orders.length > 0) {
+                oListContainer.innerHTML = window.orders.map(o => `
+                    <div class="data-list-item" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+                        <div style="display:flex; justify-content:space-between; width:100%; border-bottom:1px dashed #e2e8f0; padding-bottom:6px;">
+                            <span style="font-weight:700; font-size:13px; color:#1e293b;">অর্ডার আইডি: ${o.id || 'N/A'}</span>
+                            <span class="badge-status ${o.status==='Completed'?'status-completed':'status-pending'}">${o.status || 'Pending'}</span>
+                        </div>
+                        <div class="data-info">
+                            <h5 style="color:#2563eb; font-size:13px;">প্রোডাক্ট: ${o.product}</h5>
+                            <p><b>কাস্টমার:</b> ${o.name} | <b>মোবাইল:</b> ${o.phone}</p>
+                            <p><b>ঠিকানা:</b> ${o.address}</p>
+                        </div>
+                        <div class="action-btns" style="width:100%; justify-content:flex-end;">
+                            <button class="btn-status" onclick="toggleOrderStatus('${o.id}', '${o._fbKey || ''}')">${o.status==='Completed'?'পেনন্ডিং করুন':'ডেলিভারড করুন'}</button>
+                            <button class="btn-del" onclick="deleteOrder('${o.id}', '${o._fbKey || ''}')"><i class="fas fa-trash"></i> ডিলিট</button>
+                        </div>
+                    </div>
+                `).join('');
+            } else { oListContainer.innerHTML = '<p style="text-align:center; color:#94a3b8; font-size:13px;">কোনো কাস্টমার অর্ডার নেই।</p>'; }
+
+            const sListContainer = document.getElementById('adminSliderList');
+            if(window.sliders && window.sliders.length > 0) {
+                sListContainer.innerHTML = window.sliders.map((s, idx) => {
+                    let previewSrc = (s && typeof s === 'object') ? (s.img || Object.values(s)[0]) : s;
+                    return `
+                        <div style="position:relative; display:inline-block; margin-bottom:10px;">
+                            <img src="${previewSrc}" class="preview-thumb" style="width:90px; height:60px; object-fit:cover;">
+                            <button onclick="deleteSlider(${idx})" style="position:absolute; top:-5px; right:-5px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:18px; height:18px; font-size:10px; cursor:pointer; font-weight:bold;">&times;</button>
+                        </div>`;
+                }).join('');
+            } else { sListContainer.innerHTML = '<p style="text-align:center; color:#94a3b8; font-size:13px; width:100%;">কোনো ব্যানার স্লাইডার সেট করা নেই।</p>'; }
+        }
+
+        window.onload = function() {
+            const themeConfig = JSON.parse(localStorage.getItem('ps_theme_config'));
+            if(themeConfig) {
+                document.getElementById('clrPrimary').value = themeConfig.primary;
+                document.getElementById('clrLight').value = themeConfig.light;
+                document.getElementById('clrText').value = themeConfig.text;
+                document.getElementById('clrTopBg').value = themeConfig.topBg;
+                document.getElementById('clrTopText').value = themeConfig.topText;
+            }
+            renderDashboardData();
+        };
+    </script>
+</body>
+</html>
+           

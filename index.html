@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>পঞ্চসখী - প্রিমিয়াম ট্র্যাডিশনাল ফ্যাশন</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- ফায়ারবেজের প্রয়োজনীয় SDK লিঙ্ক সমূহ (Compat সংস্করণ, যা সরাসরি HTML ফাইলে কাজ করে) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    
+    <style>
+        /* ==========================================================================
+           ১. গ্লোবাল রুট এবং রিসেট স্টাইলস (ইউজার প্যানেল থিম)
+           ========================================================================== */
+        :root {
+            --primary-color: #b9934c;
+            --primary-gradient: linear-gradient(180deg, #dfba6b, #b9934c);
+            --text-color: #ffffff;
+            --top-bg: #dfba6b;
+            --top-text: #222222;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Hind Siliguri', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #ffffff;
+            color: #2d2d2d;
+            scroll-behavior: smooth;
+        }
+
+        /* ==========================================================================
+           ২. টপ নোটিফিকেশন বার এবং হেডার লেআউট
+           ========================================================================== */
+        .top-bar {
+            background: var(--top-bg);
+            color: var(--top-text);
+            text-align: center;
+            padding: 8px 10px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .brand-header {
+            background: var(--primary-gradient);
+            padding: 14px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+        }
+
+        .header-box {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-badge {
+            background: #ffffff;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2.5px solid var(--primary-color);
+            font-weight: 700;
+            font-size: 13px;
+            color: #222222;
+            cursor: pointer;
+        }
+
+        .icon-deck {
+            display: flex;
+            gap: 20px;
+            color: var(--text-color);
+            font-size: 20px;
+            align-items: center;
+        }
+
+        .icon-deck i {
+            cursor: pointer;
+            padding: 6px;
+        }
+
+        /* ==========================================================================
+           ৩. লাইভ সার্চ ওভারলে সেকশন
+           ========================================================================== */
+        .search-overlay {
+            display: none;
+            background: #f7f7f7;
+            padding: 12px 15px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .search-overlay.active {
+            display: block;
+        }
+
+        .search-box-inner {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-box-inner input {
+            flex: 1;
+            padding: 11px 14px;
+            border: 1px solid #cccccccc;
+            border-radius: 6px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .search-box-inner button {
+            background: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        /* ==========================================================================
+           ৪. ব্যানার স্লাইডার এরিয়া (১০০% পার্মানেন্ট ফিক্সড CSS)
+           ========================================================================== */
+        .slider-wrapper {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            background: #fafafa;
+            display: none;
+        }
+
+        .slider-container {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            transition: transform 0.4s ease-in-out;
+            width: 100%;
+        }
+
+        .slide {
+            width: 100%;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slide img {
+            width: 100%;
+            height: 320px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .slide-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.9);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .slide-left {
+            left: 12px;
+        }
+
+        .slide-right {
+            right: 12px;
+        }
+
+        .slider-dots {
+            position: absolute;
+            bottom: 14px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+            z-index: 10;
+            background: rgba(0,0,0,0.35);
+            padding: 5px 12px;
+            border-radius: 12px;
+        }
+
+        .dot {
+            width: 7px;
+            height: 7px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .dot.active {
+            background: #ff5252;
+            width: 16px;
+            border-radius: 4px;
+        }
+
+        /* ==========================================================================
+           ৫. গ্রিড লেআউট এবং প্রোডাক্ট কার্ড ডিজাইন
+           ========================================================================== */
+        .section-container {
+            max-width: 600px;
+            margin: 28px auto;
+            padding: 0 15px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            padding-bottom: 6px;
+            color: #111111;
+            border-bottom: 2px solid #f5f5f5;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        .product-card {
+            background: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            border: 1px solid #eeeded;
+            transition: transform 0.2s;
+        }
+
+        .img-box {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 3/4;
+            background: #fafafa;
+        }
+
+        .img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .badge-new {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #ff5252;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 4px;
+            width: auto !important;
+            max-width: fit-content;
+            display: inline-block;
+            line-height: 1.2;
+            text-align: center;
+            white-space: nowrap;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            z-index: 5;
+        }
+
+        .badge-out {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #666666;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 4px;
+            width: auto !important;
+            max-width: fit-content;
+            display: inline-block;
+            line-height: 1.2;
+            text-align: center;
+            white-space: nowrap;
+            z-index: 5;
+        }
+        
+        .info-box {
+            padding: 12px 10px;
+        }
+
+        .p-title {
+            font-size: 14px;
+            color: #333333;
+            margin-bottom: 6px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .price-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .p-price {
+            font-size: 15px;
+            font-weight: 700;
+            color: #ff5252;
+        }
+
+        .p-old-price {
+            font-size: 13px;
+            color: #aaaaaa;
+            text-decoration: line-through;
+        }
+
+        .p-stock-badge {
+            font-size: 11px;
+            font-weight: 600;
+            color: #1d4ed8;
+            background: #eff6ff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 6px;
+        }
+        .p-stock-out-badge {
+            font-size: 11px;
+            font-weight: 600;
+            color: #b91c1c;
+            background: #fef2f2;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 6px;
+        }
+
+        /* ==========================================================================
+           ৬. সাইড নেভিগেশন ড্রয়ার ক্যাটাগরি মেনু
+           ========================================================================== */
+        .menu-drawer {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 290px;
+            height: 100%;
+            background: #ffffff;
+            z-index: 10001;
+            box-shadow: -5px 0 25px rgba(0,0,0,0.15);
+            transition: right 0.3s ease;
+        }
+
+        .menu-drawer.active {
+            right: 0;
+        }
+
+        .drawer-head {
+            background: var(--primary-gradient);
+            padding: 20px;
+            color: var(--text-color);
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .drawer-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .drawer-shroud {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.45);
+            z-index: 10000;
+            display: none;
+        }
+
+        .drawer-shroud.active {
+            display: block;
+        }
+
+        /* ==========================================================================
+           ৭. প্রোডাক্ট ডিটেইলস মডাল এবং স্লাইড-আপ অর্ডার ফর্ম
+           ========================================================================== */
+        .product-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.65);
+            z-index: 20000;
+            display: none;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .product-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #ffffff;
+            width: 100%;
+            max-width: 600px;
+            border-radius: 20px 20px 0 0;
+            max-height: 88vh;
+            overflow-y: auto;
+            padding: 22px;
+            position: relative;
+        }
+
+        .modal-close {
+            position: sticky;
+            top: 0;
+            float: right;
+            font-size: 26px;
+            cursor: pointer;
+            background: #ffffff;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+            z-index: 100;
+        }
+
+        .modal-img {
+            width: 100%;
+            max-height: 360px;
+            object-fit: contain;
+            background: #fafafa;
+            border-radius: 10px;
+            margin-bottom: 16px;
+        }
+
+        .modal-gallery {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            margin-bottom: 16px;
+        }
+
+        .gallery-thumb {
+            width: 65px;
+            height: 65px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1.5px solid #dddddd;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .gallery-thumb.active {
+            border-color: #ff5252;
+        }
+
+        .modal-title {
+            font-size: 19px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .modal-price-box {
+            border: 1px dashed #ff5252;
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            font-size: 22px;
+            font-weight: 700;
+            color: #ff5252;
+        }
+
+        .modal-price-box span {
+            font-size: 15px;
+            color: #aaaaaa;
+            text-decoration: line-through;
+            margin-left: 12px;
+        }
+        
+        .order-form-box {
+            background: #fffdf8;
+            border: 1.5px solid var(--primary-color);
+            padding: 18px;
+            border-radius: 10px;
+            margin-top: 24px;
+        }
+
+        .order-form-box h4 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 16px;
+            font-size: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #dddddd;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        .submit-order-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, #ff5252, #d63636);
+            color: #ffffff;
+            border: none;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        /* ==========================================================================
+           ⑧. ফুটার এবং অন্যান্য উইজেট স্টাইলস
+           ========================================================================== */
+        .brand-footer {
+            background: #1c1614;
+            color: #ffffff;
+            padding: 30px 15px;
+            text-align: center;
+            font-size: 13px;
+            margin-top: 40px;
+            border-top: 3px solid var(--primary-color);
+        }
+
+        .empty-msg {
+            text-align: center;
+            color: #aaaaaa;
+            font-size: 14px;
+            padding: 30px 0;
+            grid-column: span 2;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar" id="liveHeadline">🎉 WELCOME TO PANCHOSOKHI TRADITIONAL FASHION 🎉</div>
+
+    <div class="drawer-shroud" id="shroud" onclick="actionMenu(false)"></div>
+    <div class="menu-drawer" id="drawer">
+        <div class="drawer-head">
+            <span>Categories</span>
+            <i class="fas fa-times" onclick="actionMenu(false)"></i>
+        </div>
+        <div id="drawerItemsDeck"></div>
+    </div>
+
+    <header class="brand-header">
+        <div class="header-box">
+            <div class="logo-badge" onclick="window.location.reload()">পঞ্চসখী</div>
+            <div class="icon-deck">
+                <i class="fas fa-search" onclick="toggleSearch()"></i>
+                <i class="fas fa-bars" onclick="actionMenu(true)"></i>
+            </div>
+        </div>
+    </header>
+
+    <div class="search-overlay" id="searchBar">
+        <div class="search-box-inner">
+            <input type="text" id="searchInput" placeholder="প্রোডাক্টের নাম লিখে খুঁজুন..." onkeyup="liveSearch()">
+            <button onclick="clearAndCloseSearch()"><i class="fas fa-times"></i></button>
+        </div>
+    </div>
+
+    <div class="slider-wrapper" id="sliderWrapper">
+        <button class="slide-btn slide-left" onclick="moveSlide(-1); resetSliderTimer();">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="slider-container" id="sliderStage"></div>
+        <button class="slide-btn slide-right" onclick="moveSlide(1); resetSliderTimer();">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        <div class="slider-dots" id="dotDeck"></div>
+    </div>
+
+    <div class="dynamic-showcase" id="dynamicSectionsContainer"></div>
+
+    <div class="product-modal" id="productModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeProductModal()">&times;</span>
+            <img class="modal-img" id="modalImg" src="">
+            <div class="modal-gallery" id="modalGallery"></div>
+            <h2 class="modal-title" id="modalTitle"></h2>
+            <div id="modalStockStatus" style="margin-bottom: 10px;"></div> 
+            <div class="modal-price-box" id="modalPrice"></div>
+            
+            <div class="order-form-box">
+                <h4 id="formStatusTitle">অর্ডারটি কনফার্ম করতে নিচের ফর্মটি পূরণ করুন</h4>
+                <form id="orderFormSubmit" onsubmit="handleOrderSubmit(event)">
+                    <input type="hidden" id="targetProdId">
+                    <div class="form-group">
+                        <label>আপনার নাম *</label>
+                        <input type="text" id="custName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>মোবাইল নাম্বার *</label>
+                        <input type="tel" id="custPhone" required>
+                    </div>
+                    <div class="form-group">
+                        <label>সম্পূর্ণ ঠিকানা *</label>
+                        <textarea id="custAddress" rows="2" required></textarea>
+                    </div>
+                    <button type="submit" id="orderSubmitBtn" class="submit-order-btn">অর্ডার নিশ্চিত করুন</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer class="brand-footer">
+        <p>© 2026 পঞ্চসখী ট্র্যাডিশনাল ফ্যাশন। সর্বস্বত্ব সংরক্ষিত।</p>
+    </footer>
+
+    <script>
+        // ==========================================================================
+        // আপনার নিখুঁত ফায়ারবেজ কনফিগারেশন সেটআপ (কোনো পরিবর্তন ছাড়া)
+        // ==========================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAn8lTZbLSdf6N2Bh3m9IE0VayJeqfaJGU",
+            authDomain: "ponchosokhi.firebaseapp.com",
+            databaseURL: "https://ponchosokhi-default-rtdb.firebaseio.com",
+            projectId: "ponchosokhi",
+            storageBucket: "ponchosokhi.firebasestorage.app",
+            messagingSenderId: "215002944861",
+            appId: "1:215002944861:web:2c5dd4204b205d3e32c4b4",
+            measurementId: "G-FZDWZE6S3Y"
+        };
+
+        // ফায়ারবেজ ইনিশিয়ালাইজেশন
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // লোকাল ভ্যারিয়েবল ব্যাকআপ (ডাটাবেজ থেকে ডাটা না আসা পর্যন্ত এগুলো কাজ করবে)
+        let products = [];
+        let sliders = [];
+        let categories = ['Best Selling Product', 'Top 10 Sharee'];
+        let currentSlide = 0;
+        let autoSlideInterval;
+
+        // ডাটাবেজ থেকে রিয়েলটাইম লাইভ ডাটা লোড করার সিস্টেম
+        function fetchLiveFirebaseData() {
+            // ১. থিম ও হেডলাইন লোড
+            db.ref('ps_headline').on('value', (snapshot) => {
+                if(snapshot.exists()) {
+                    document.getElementById('liveHeadline').innerHTML = snapshot.val();
+                }
+            });
+
+            db.ref('ps_theme_config').on('value', (snapshot) => {
+                if(snapshot.exists()) {
+                    const themeConfig = snapshot.val();
+                    document.documentElement.style.setProperty('--primary-color', themeConfig.primary);
+                    document.documentElement.style.setProperty('--primary-gradient', `linear-gradient(180deg, ${themeConfig.light}, ${themeConfig.primary})`);
+                    document.documentElement.style.setProperty('--text-color', themeConfig.text);
+                    document.documentElement.style.setProperty('--top-bg', themeConfig.topBg);
+                    document.documentElement.style.setProperty('--top-text', themeConfig.topText);
+                }
+            });
+
+            // ২. ক্যাটাগরি লোড
+            db.ref('ps_categories').on('value', (snapshot) => {
+                if(snapshot.exists()) {
+                    categories = snapshot.val();
+                }
+                // ৩. স্লাইডার লোড (ক্যাটাগরি আসার পর বা সমান্তরালে)
+                db.ref('ps_sliders').on('value', (snapshot) => {
+                    if(snapshot.exists()) {
+                        sliders = snapshot.val();
+                    }
+                    // ৪. প্রোডাক্টস লোড
+                    db.ref('ps_products').on('value', (snapshot) => {
+                        if(snapshot.exists()) {
+                            const data = snapshot.val();
+                            // যদি অবজেক্ট আকারে আসে তবে অ্যারেতে রূপান্তর করবে
+                            products = Array.isArray(data) ? data : Object.values(data);
+                        }
+                        // সব ডাটা আসার পর ইন্টারফেস রিফ্রেশ হবে
+                        renderAppUI();
+                    });
+                });
+            });
+        }
+
+        function renderAppUI() {
+            const drawerDeck = document.getElementById('drawerItemsDeck');
+            drawerDeck.innerHTML = categories.map((cat, i) => {
+                return `<div class="drawer-item" onclick="scrollToSection('sec-${i}')"><span>${cat}</span><i class="fas fa-chevron-right"></i></div>`;
+            }).join('');
+
+            const sliderWrapper = document.getElementById('sliderWrapper');
+            const sliderStage = document.getElementById('sliderStage');
+            const dotDeck = document.getElementById('dotDeck');
+            sliderStage.innerHTML = ''; 
+            dotDeck.innerHTML = '';
+
+            if(sliders && sliders.length > 0) {
+                sliderWrapper.style.display = 'block';
+                sliderStage.style.width = `${sliders.length * 100}%`;
+                
+                sliders.forEach((slideData, idx) => {
+                    let finalImgSrc = "";
+                    if (slideData) {
+                        if (typeof slideData === 'object' && slideData.img) {
+                            finalImgSrc = slideData.img;
+                        } else if (typeof slideData === 'object') {
+                            finalImgSrc = Object.values(slideData)[0] || "";
+                        } else {
+                            finalImgSrc = slideData;
+                        }
+                    }
+                    
+                    sliderStage.innerHTML += `
+                        <div class="slide" style="width: ${100 / sliders.length}%;">
+                            <img src="${finalImgSrc}">
+                        </div>`;
+                        
+                    dotDeck.innerHTML += `
+                        <div class="dot ${idx === 0 ? 'active' : ''}" onclick="goToSlide(${idx}); resetSliderTimer();"></div>`;
+                });
+                
+                if(currentSlide >= sliders.length) { currentSlide = 0; }
+                sliderStage.style.transform = `translateX(-${currentSlide * (100 / sliders.length)}%)`;
+                
+                clearInterval(autoSlideInterval);
+                startSliderTimer();
+            } else { 
+                sliderWrapper.style.display = 'none'; 
+            }
+
+            const mainContainer = document.getElementById('dynamicSectionsContainer');
+            mainContainer.innerHTML = '';
+            
+            categories.forEach((catName, catIdx) => {
+                const catProducts = products.filter(p => p && p.section === catName);
+                let cardsHTML = '';
+                
+                if(catProducts.length > 0) {
+                    catProducts.forEach(p => {
+                        let firstImg = p.img || (p.images && p.images[0] ? p.images[0] : p.imageURL || '');
+                        let badgeHTML = p.badge ? `<span class="badge-new">${p.badge}</span>` : '';
+                        let stockHTML = (p.stock <= 0) ? `<span class="badge-out">Stock Out</span>` : '';
+                        let oldPriceHTML = p.oldPrice ? `<span class="p-old-price">৳${p.oldPrice}</span>` : '';
+                        
+                        let prodStockNum = parseInt(p.stock);
+                        let liveStockDisplayHTML = '';
+                        if(!isNaN(prodStockNum)) {
+                            liveStockDisplayHTML = prodStockNum > 0 ? `<div class="p-stock-badge"><i class="fas fa-boxes"></i> স্টক: ${prodStockNum} পিস আছে</div>` : `<div class="p-stock-out-badge"><i class="fas fa-exclamation-triangle"></i> স্টক শেষ</div>`;
+                        }
+                        
+                        cardsHTML += `
+                            <div class="product-card" onclick="openProductModal(${p.id})">
+                                <div class="img-box">
+                                    ${badgeHTML}
+                                    ${stockHTML}
+                                    <img src="${firstImg}">
+                                </div>
+                                <div class="info-box">
+                                    <div class="p-title">${p.title}</div>
+                                    <div class="price-row">
+                                        <span class="p-price">৳${p.price}</span>
+                                        ${oldPriceHTML}
+                                    </div>
+                                    ${liveStockDisplayHTML}
+                                </div>
+                            </div>`;
+                    });
+                } else { 
+                    cardsHTML = `<div class="empty-msg">এই ক্যাটাগরিতে কোনো প্রোডাক্ট নেই।</div>`; 
+                }
+                
+                mainContainer.innerHTML += `
+                    <section class="section-container" id="sec-${catIdx}">
+                        <h3 class="section-title">${catName}</h3>
+                        <div class="product-grid">${cardsHTML}</div>
+                    </section>`;
+            });
+        }
+
+        function moveSlide(dir) {
+            if(!sliders || sliders.length <= 1) return;
+            currentSlide = (currentSlide + dir + sliders.length) % sliders.length;
+            document.getElementById('sliderStage').style.transform = `translateX(-${currentSlide * (100 / sliders.length)}%)`;
+            document.querySelectorAll('.dot').forEach((dot, idx) => {
+                dot.classList.toggle('active', idx === currentSlide);
+            });
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            document.getElementById('sliderStage').style.transform = `translateX(-${currentSlide * (100 / sliders.length)}%)`;
+            document.querySelectorAll('.dot').forEach((dot, idx) => {
+                dot.classList.toggle('active', idx === index);
+            });
+        }
+
+        function startSliderTimer() { 
+            if(sliders && sliders.length > 1) {
+                autoSlideInterval = setInterval(() => moveSlide(1), 4000); 
+            }
+        }
+
+        function resetSliderTimer() { 
+            clearInterval(autoSlideInterval); 
+            startSliderTimer(); 
+        }
+
+        function toggleSearch() { 
+            document.getElementById('searchBar').classList.toggle('active'); 
+        }
+
+        function clearAndCloseSearch() { 
+            document.getElementById('searchInput').value = ""; 
+            liveSearch(); 
+            toggleSearch(); 
+        }
+
+        function liveSearch() {
+            const filter = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.product-card').forEach(card => { 
+                const title = card.querySelector('.p-title').innerText.toLowerCase();
+                card.style.display = title.includes(filter) ? "" : "none"; 
+            });
+        }
+
+        function actionMenu(isOpen) { 
+            document.getElementById('drawer').classList.toggle('active', isOpen); 
+            document.getElementById('shroud').classList.toggle('active', isOpen); 
+        }
+
+        function scrollToSection(id) { 
+            actionMenu(false); 
+            const target = document.getElementById(id); 
+            if(target) {
+                window.scrollTo({ top: target.offsetTop - 70, behavior: 'smooth' }); 
+            }
+        }
+
+        function openProductModal(productId) {
+            const p = products.find(prod => prod && prod.id === productId); 
+            if(!p) return;
+            
+            document.getElementById('targetProdId').value = p.id;
+            document.getElementById('modalTitle').innerText = p.title;
+            document.getElementById('modalPrice').innerHTML = `৳${p.price} ${p.oldPrice ? `<span>৳${p.oldPrice}</span>` : ''}`;
+            
+            const modalStockBox = document.getElementById('modalStockStatus');
+            let currentStockNum = parseInt(p.stock);
+            if(!isNaN(currentStockNum)) {
+                modalStockBox.innerHTML = currentStockNum > 0 ? `<span class="p-stock-badge" style="font-size:13px; padding:4px 10px;"><i class="fas fa-layer-group"></i> উপলব্ধ স্টক: ${currentStockNum} পিস উপলব্ধ আছে</span>` : `<span class="p-stock-out-badge" style="font-size:13px; padding:4px 10px;"><i class="fas fa-times-circle"></i> স্টক দুঃখিত, শেষ হয়ে গেছে!</span>`;
+            } else { modalStockBox.innerHTML = ''; }
+            
+            const mImg = document.getElementById('modalImg'); 
+            mImg.src = p.img || (p.images && p.images[0] ? p.images[0] : p.imageURL || '');
+            
+            const gal = document.getElementById('modalGallery'); 
+            gal.innerHTML = '';
+            
+            let allImgs = p.images || [p.img || p.imageURL];
+            if(allImgs && allImgs.length > 1) {
+                allImgs.forEach((img, i) => { 
+                    gal.innerHTML += `
+                        <img src="${img}" class="gallery-thumb ${i === 0 ? 'active' : ''}" onclick="document.getElementById('modalImg').src='${img}'; document.querySelectorAll('.gallery-thumb').forEach(t=>t.classList.remove('active')); this.classList.add('active');">`; 
+                });
+            }
+            
+            const btn = document.getElementById('orderSubmitBtn');
+            const inputs = document.querySelectorAll('#orderFormSubmit input, #orderFormSubmit textarea');
+            
+            if(p.stock !== undefined && p.stock <= 0) { 
+                btn.disabled = true; 
+                btn.innerText = "Stock Out"; 
+                document.getElementById('formStatusTitle').innerText = "দুঃখিত, স্টক শেষ!"; 
+                inputs.forEach(i => i.disabled = true); 
+            } else { 
+                btn.disabled = false; 
+                btn.innerText = "অর্ডার নিশ্চিত করুন"; 
+                document.getElementById('formStatusTitle').innerText = "অর্ডারটি কনফার্ম করতে নিচের ফর্মটি পূরণ করুন"; 
+                inputs.forEach(i => i.disabled = false); 
+            }
+            document.getElementById('productModal').classList.add('active');
+        }
+
+        function closeProductModal() { 
+            document.getElementById('productModal').classList.remove('active'); 
+            document.getElementById('orderFormSubmit').reset(); 
+        }
+
+        // ==========================================================================
+        // সরাসরি ফায়ারবেজে অর্ডার সাবমিট এবং লাইভ স্টক কমানো
+        // ==========================================================================
+        function handleOrderSubmit(e) {
+            e.preventDefault(); 
+            const prodId = parseInt(document.getElementById('targetProdId').value); 
+            
+            // ফায়ারবেজ থেকে লেটেস্ট প্রোডাক্ট ডাটা বের করা
+            const pIndex = products.findIndex(prod => prod && prod.id === prodId);
+            if(pIndex === -1) return;
+            const p = products[pIndex];
+            
+            const orderId = 'PS-' + Math.floor(1000 + Math.random() * 9000);
+            const custName = document.getElementById('custName').value;
+            
+            const newOrder = { 
+                id: orderId, 
+                name: custName, 
+                phone: document.getElementById('custPhone').value, 
+                address: document.getElementById('custAddress').value, 
+                product: p.title, 
+                productId: p.id,
+                price: p.price,
+                status: 'Pending',
+                timestamp: new Date().toISOString()
+            };
+            
+            // ১. ফায়ারবেজের 'panchosokhi_orders' নোডে সরাসরি অর্ডার পাঠানো হচ্ছে
+            db.ref('panchosokhi_orders').push(newOrder)
+            .then(() => {
+                // ২. ডাটাবেজে স্টক আপডেট করার প্রক্রিয়া
+                if(p.stock !== undefined && p.stock > 0) {
+                    const updatedStock = p.stock - 1;
+                    db.ref(`ps_products/${pIndex}/stock`).set(updatedStock);
+                }
+                
+                alert(`ধন্যবাদ ${custName}! অর্ডার সফল হয়েছে। আইডি: ${orderId}`); 
+                closeProductModal(); 
+            })
+            .catch((error) => {
+                console.error("Firebase Error:", error);
+                alert("দুঃখিত, অর্ডারটি সম্পন্ন করা যায়নি। আবার চেষ্টা করুন।");
+            });
+        }
+
+        // অ্যাপ রানিং হওয়ার সাথে সাথে ফায়ারবেজ লাইভ লিসেনার অন হবে
+        window.onload = fetchLiveFirebaseData;
+    </script>
+</body>
+</html>
+</html>
