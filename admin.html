@@ -20,6 +20,95 @@
             padding-bottom: 60px;
         }
 
+        /* === নতুন প্রাইভেসি লগইন স্ক্রিন স্টাইল === */
+        #privacyAuthOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            z-index: 99999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .auth-card {
+            background: #fff;
+            padding: 30px 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+        }
+        .auth-card i {
+            font-size: 45px;
+            color: #f59e0b;
+            margin-bottom: 15px;
+        }
+        .auth-card h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        .auth-card p {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+        .auth-input-group {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        .auth-input-group input {
+            width: 100%;
+            padding: 12px 40px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            outline: none;
+            font-size: 16px;
+            text-align: center;
+            letter-spacing: 4px;
+            font-weight: bold;
+        }
+        .auth-input-group input:focus {
+            border-color: #2563eb;
+        }
+        .auth-input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: #94a3b8;
+            margin: 0;
+        }
+        .auth-btn {
+            width: 100%;
+            padding: 12px;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: background 0.2s;
+        }
+        .auth-btn:hover {
+            background: #1d4ed8;
+        }
+        .error-msg {
+            color: #ef4444;
+            font-size: 12px;
+            margin-top: 8px;
+            font-weight: bold;
+            display: none;
+        }
+
         /* === প্রফেশনাল ড্যাশবোর্ড হেডার === */
         .admin-header { 
             background: linear-gradient(135deg, #1e293b, #0f172a); 
@@ -219,7 +308,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // রিয়েল-টাইম ডাটা ফায়ারবেস এবং লোকাল মেমরির মধ্যে সমন্বয় করার ফিক্সড ফাংশন
+        // রিয়েল-тайম ডাটা ফায়ারবেস এবং লোকাল মেমরির মধ্যে সমন্বয় করার ফিক্সড ফাংশন
         function initFirebaseSync() {
             // প্রোডাক্টস ডাটা রিয়েল-টাইম সিঙ্ক
             db.ref('ps_products').on('value', (snapshot) => {
@@ -284,9 +373,44 @@
         };
 
         window.addEventListener('DOMContentLoaded', initFirebaseSync);
+
+        // নতুন সিকিউরিটি পিন ভেরিফিকেশন কোড লজিক
+        function checkAdminAccess() {
+            const enteredPin = document.getElementById('adminPinInput').value;
+            const errorElement = document.getElementById('authErrorMsg');
+            
+            if (enteredPin === '150850') {
+                sessionStorage.setItem('ps_admin_authenticated', 'true');
+                document.getElementById('privacyAuthOverlay').style.display = 'none';
+            } else {
+                errorElement.style.display = 'block';
+                document.getElementById('adminPinInput').value = '';
+            }
+        }
+
+        // পেজ লোড হওয়ার সাথে সাথেই প্রাইভেসি চেক রান হবে
+        window.addEventListener('DOMContentLoaded', () => {
+            if (sessionStorage.getItem('ps_admin_authenticated') === 'true') {
+                document.getElementById('privacyAuthOverlay').style.display = 'none';
+            }
+        });
     </script>
 </head>
 <body>
+
+    <div id="privacyAuthOverlay">
+        <div class="auth-card">
+            <i class="fas fa-lock"></i>
+            <h2>অ্যাডমিন ভেরিফিকেশন</h2>
+            <p>কন্ট্রোল প্যানেলে প্রবেশ করতে সিকিউরিটি পিন দিন</p>
+            <div class="auth-input-group">
+                <i class="fas fa-key"></i>
+                <input type="password" id="adminPinInput" placeholder="••••••" maxlength="6" onkeydown="if(event.key==='Enter') checkAdminAccess()">
+            </div>
+            <button class="auth-btn" onclick="checkAdminAccess()">ভেরিফাই করুন</button>
+            <div class="error-msg" id="authErrorMsg">❌ ভুল পিন নম্বর! আবার চেষ্টা করুন।</div>
+        </div>
+    </div>
 
     <header class="admin-header">
         <h1><i class="fas fa-user-shield"></i> পঞ্চসখী কন্ট্রোল প্যানেল</h1>
@@ -373,10 +497,10 @@
         <div class="panel-card" id="tab-3">
             <h3 class="card-title"><i class="fas fa-bullhorn"></i> লাইভ মুভিং নোটিফিকেশন বার</h3>
             <div class="form-group">
-                <label>হেডলাইন টেক্সট</label>
+                <label>হেডлайн টেক্সট</label>
                 <input type="text" id="headlineText" placeholder="🎉 NEW YEAR SPECIAL OFFER NOW LIVE! 🎉">
             </div>
-            <button class="btn-primary" onclick="saveHeadline()" style="margin-bottom: 25px; background: #10b981;">হেডলাইন মুভিং আপডেট করুন</button>
+            <button class="btn-primary" onclick="saveHeadline()" style="margin-bottom: 25px; background: #10b981;">হেডлайн মুভিং আপডেট করুন</button>
 
             <h3 class="card-title"><i class="fas fa-palette"></i> ডায়নামিক কালার সেটিংস (থিম)</h3>
             <div class="color-pickers">
@@ -577,7 +701,7 @@
             let currentStatus = targetOrder.status || 'Pending';
             let nextStatus = (currentStatus === 'Pending') ? 'Completed' : 'Pending';
             
-            // স্টক প্লাস/মাইনাস লজিক
+            // স্টকプラス/মাইনাস লজিক
             if (nextStatus === 'Completed') {
                 window.products = window.products.map(p => {
                     if (p.title.trim() === targetOrder.product.trim() && p.stock > 0) {
@@ -648,7 +772,7 @@
             };
             localStorage.setItem('ps_theme_config', JSON.stringify(themeConfig));
             if(window.firebaseSaveThemeConfigData) window.firebaseSaveThemeConfigData(themeConfig);
-            alert('থিম এবং কালার充 কনফিগারেশন সেভ হয়েছে!');
+            alert('থিম এবং কালার কনফিগারেশন সেভ হয়েছে!');
         }
 
         function renderDashboardData() {
@@ -716,7 +840,7 @@
                     return `
                         <div style="position:relative; display:inline-block; margin-bottom:10px;">
                             <img src="${previewSrc}" class="preview-thumb" style="width:90px; height:60px; object-fit:cover;">
-                            <button onclick="deleteSlider(${idx})" style="position:absolute; top:-5px; right:-5px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:18px; height:18px; font-size:10px; cursor:pointer; font-weight:bold;">&times;</button>
+                            <button onclick="deleteSlider(${idx})" style="position:absolute; top:-5px; right:-5px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:18px; height:18px; font-size:10px; cursor:pointer; font-weight:bold;&times;</button>
                         </div>`;
                 }).join('');
             } else { sListContainer.innerHTML = '<p style="text-align:center; color:#94a3b8; font-size:13px; width:100%;">কোনো ব্যানার স্লাইডার সেট করা নেই।</p>'; }
@@ -736,4 +860,3 @@
     </script>
 </body>
 </html>
-           
